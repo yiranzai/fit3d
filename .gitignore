@@ -1,0 +1,563 @@
+# Fit3D 多样化地图样式系统 - Git忽略文件
+# Fit3D Diverse Map Styles System - Git Ignore File
+
+# 依赖文件 / Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 构建输出 / Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# 运行时文件 / Runtime files
+*.pid
+*.seed
+*.pid.lock
+
+# 覆盖率报告 / Coverage reports
+coverage/
+*.lcov
+.nyc_output
+
+# 依赖锁定文件 / Dependency lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 环境变量文件 / Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 日志文件 / Log files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 数据库文件 / Database files
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+*.mbtiles
+
+# 缓存文件 / Cache files
+.cache/
+cache/
+tiles/
+*.cache
+
+# 临时文件 / Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# 操作系统文件 / OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE和编辑器文件 / IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# TypeScript
+*.tsbuildinfo
+
+# 测试文件 / Test files
+test-results/
+playwright-report/
+playwright/.cache/
+
+# 地图数据文件 / Map data files
+*.gpx
+*.fit
+*.tcx
+*.kml
+*.kmz
+
+# 离线地图文件 / Offline map files
+offline-maps/
+*.mbtiles
+*.sqlite
+
+# 用户数据目录 / User data directory
+.fit3d/
+user-data/
+
+# 配置文件 / Configuration files
+config.local.json
+settings.local.json
+
+# 备份文件 / Backup files
+*.bak
+*.backup
+*.old
+
+# 压缩文件 / Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# 图像文件 / Image files (如果不需要版本控制)
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+# *.svg
+# *.webp
+
+# 文档生成文件 / Documentation generation
+docs/_build/
+docs/.doctrees/
+
+# 性能分析文件 / Performance profiling
+*.cpuprofile
+*.heapprofile
+
+# 调试文件 / Debug files
+debug.log
+*.debug
+
+# 本地开发文件 / Local development files
+.local/
+local/
+
+# 地图瓦片缓存 / Map tile cache
+tile-cache/
+map-cache/
+
+# 用户上传文件 / User uploads
+uploads/
+user-uploads/
+
+# 分析数据 / Analytics data
+analytics/
+*.analytics
+
+# 监控数据 / Monitoring data
+monitoring/
+*.monitoring
+
+# 密钥文件 / Secret files
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+
+# 证书文件 / Certificate files
+*.crt
+*.cer
+*.der
+
+# 配置文件备份 / Configuration backups
+*.conf.bak
+*.config.bak
+
+# 本地测试数据 / Local test data
+test-data/
+mock-data/
+
+# 性能测试结果 / Performance test results
+benchmark-results/
+performance-tests/
+
+# 地图提供商API密钥 / Map provider API keys
+api-keys.json
+provider-keys.json
+
+# 用户偏好设置 / User preferences
+user-preferences.json
+preferences.local.json
+
+# 活动数据文件 / Activity data files
+activities/
+*.activity
+
+# 轨迹数据文件 / Track data files
+tracks/
+*.track
+
+# 地图样式文件 / Map style files
+custom-styles/
+*.style
+
+# 瓦片服务器配置 / Tile server configs
+tile-servers.json
+server-config.json
+
+# 缓存配置 / Cache configuration
+cache-config.json
+cache-settings.json
+
+# 数据库迁移文件 / Database migration files
+migrations/
+*.migration
+
+# 数据备份 / Data backups
+backups/
+*.backup
+
+# 用户会话 / User sessions
+sessions/
+*.session
+
+# 临时地图文件 / Temporary map files
+temp-maps/
+*.temp
+
+# 地图预览文件 / Map preview files
+previews/
+*.preview
+
+# 瓦片下载临时文件 / Tile download temp files
+downloads/
+*.downloading
+
+# 地图渲染临时文件 / Map rendering temp files
+renders/
+*.rendering
+
+# 用户自定义样式 / User custom styles
+user-styles/
+custom-styles/
+
+# 地图提供商配置 / Map provider configurations
+provider-configs/
+*.provider
+
+# 样式配置 / Style configurations
+style-configs/
+*.style-config
+
+# 缓存统计文件 / Cache statistics
+cache-stats/
+*.stats
+
+# 性能监控文件 / Performance monitoring
+performance/
+*.performance
+
+# 错误日志 / Error logs
+errors/
+*.error
+
+# 用户反馈 / User feedback
+feedback/
+*.feedback
+
+# 地图数据导入 / Map data imports
+imports/
+*.import
+
+# 地图数据导出 / Map data exports
+exports/
+*.export
+
+# 地图样式导入 / Map style imports
+style-imports/
+*.style-import
+
+# 地图样式导出 / Map style exports
+style-exports/
+*.style-export
+
+# 用户数据导入 / User data imports
+user-imports/
+*.user-import
+
+# 用户数据导出 / User data exports
+user-exports/
+*.user-export
+
+# 地图提供商测试 / Map provider tests
+provider-tests/
+*.provider-test
+
+# 样式测试 / Style tests
+style-tests/
+*.style-test
+
+# 缓存测试 / Cache tests
+cache-tests/
+*.cache-test
+
+# 可视化测试 / Visualization tests
+visualization-tests/
+*.visualization-test
+
+# CLI测试 / CLI tests
+cli-tests/
+*.cli-test
+
+# 集成测试 / Integration tests
+integration-tests/
+*.integration-test
+
+# 端到端测试 / End-to-end tests
+e2e-tests/
+*.e2e-test
+
+# 性能测试 / Performance tests
+perf-tests/
+*.perf-test
+
+# 压力测试 / Stress tests
+stress-tests/
+*.stress-test
+
+# 负载测试 / Load tests
+load-tests/
+*.load-test
+
+# 安全测试 / Security tests
+security-tests/
+*.security-test
+
+# 兼容性测试 / Compatibility tests
+compatibility-tests/
+*.compatibility-test
+
+# 可访问性测试 / Accessibility tests
+accessibility-tests/
+*.accessibility-test
+
+# 国际化测试 / Internationalization tests
+i18n-tests/
+*.i18n-test
+
+# 本地化测试 / Localization tests
+l10n-tests/
+*.l10n-test
+
+# 地图提供商健康检查 / Map provider health checks
+health-checks/
+*.health-check
+
+# 样式验证 / Style validation
+style-validation/
+*.style-validation
+
+# 缓存验证 / Cache validation
+cache-validation/
+*.cache-validation
+
+# 数据验证 / Data validation
+data-validation/
+*.data-validation
+
+# 配置验证 / Configuration validation
+config-validation/
+*.config-validation
+
+# 用户输入验证 / User input validation
+input-validation/
+*.input-validation
+
+# 输出验证 / Output validation
+output-validation/
+*.output-validation
+
+# 地图渲染验证 / Map rendering validation
+rendering-validation/
+*.rendering-validation
+
+# 瓦片加载验证 / Tile loading validation
+tile-loading-validation/
+*.tile-loading-validation
+
+# 样式切换验证 / Style switching validation
+style-switching-validation/
+*.style-switching-validation
+
+# 提供商切换验证 / Provider switching validation
+provider-switching-validation/
+*.provider-switching-validation
+
+# 缓存清理验证 / Cache cleanup validation
+cache-cleanup-validation/
+*.cache-cleanup-validation
+
+# 数据同步验证 / Data sync validation
+data-sync-validation/
+*.data-sync-validation
+
+# 用户偏好验证 / User preference validation
+user-preference-validation/
+*.user-preference-validation
+
+# 活动数据验证 / Activity data validation
+activity-data-validation/
+*.activity-data-validation
+
+# 轨迹数据验证 / Track data validation
+track-data-validation/
+*.track-data-validation
+
+# 地图数据验证 / Map data validation
+map-data-validation/
+*.map-data-validation
+
+# 瓦片数据验证 / Tile data validation
+tile-data-validation/
+*.tile-data-validation
+
+# 样式数据验证 / Style data validation
+style-data-validation/
+*.style-data-validation
+
+# 提供商数据验证 / Provider data validation
+provider-data-validation/
+*.provider-data-validation
+
+# 缓存数据验证 / Cache data validation
+cache-data-validation/
+*.cache-data-validation
+
+# 用户数据验证 / User data validation
+user-data-validation/
+*.user-data-validation
+
+# 系统数据验证 / System data validation
+system-data-validation/
+*.system-data-validation
+
+# 配置数据验证 / Configuration data validation
+config-data-validation/
+*.config-data-validation
+
+# 日志数据验证 / Log data validation
+log-data-validation/
+*.log-data-validation
+
+# 错误数据验证 / Error data validation
+error-data-validation/
+*.error-data-validation
+
+# 性能数据验证 / Performance data validation
+performance-data-validation/
+*.performance-data-validation
+
+# 监控数据验证 / Monitoring data validation
+monitoring-data-validation/
+*.monitoring-data-validation
+
+# 分析数据验证 / Analytics data validation
+analytics-data-validation/
+*.analytics-data-validation
+
+# 统计数据验证 / Statistics data validation
+statistics-data-validation/
+*.statistics-data-validation
+
+# 报告数据验证 / Report data validation
+report-data-validation/
+*.report-data-validation
+
+# 仪表板数据验证 / Dashboard data validation
+dashboard-data-validation/
+*.dashboard-data-validation
+
+# 图表数据验证 / Chart data validation
+chart-data-validation/
+*.chart-data-validation
+
+# 可视化数据验证 / Visualization data validation
+visualization-data-validation/
+*.visualization-data-validation
+
+# 地图数据验证 / Map data validation
+map-data-validation/
+*.map-data-validation
+
+# 瓦片数据验证 / Tile data validation
+tile-data-validation/
+*.tile-data-validation
+
+# 样式数据验证 / Style data validation
+style-data-validation/
+*.style-data-validation
+
+# 提供商数据验证 / Provider data validation
+provider-data-validation/
+*.provider-data-validation
+
+# 缓存数据验证 / Cache data validation
+cache-data-validation/
+*.cache-data-validation
+
+# 用户数据验证 / User data validation
+user-data-validation/
+*.user-data-validation
+
+# 系统数据验证 / System data validation
+system-data-validation/
+*.system-data-validation
+
+# 配置数据验证 / Configuration data validation
+config-data-validation/
+*.config-data-validation
+
+# 日志数据验证 / Log data validation
+log-data-validation/
+*.log-data-validation
+
+# 错误数据验证 / Error data validation
+error-data-validation/
+*.error-data-validation
+
+# 性能数据验证 / Performance data validation
+performance-data-validation/
+*.performance-data-validation
+
+# 监控数据验证 / Monitoring data validation
+monitoring-data-validation/
+*.monitoring-data-validation
+
+# 分析数据验证 / Analytics data validation
+analytics-data-validation/
+*.analytics-data-validation
+
+# 统计数据验证 / Statistics data validation
+statistics-data-validation/
+*.statistics-data-validation
+
+# 报告数据验证 / Report data validation
+report-data-validation/
+*.report-data-validation
+
+# 仪表板数据验证 / Dashboard data validation
+dashboard-data-validation/
+*.dashboard-data-validation
+
+# 图表数据验证 / Chart data validation
+chart-data-validation/
+*.chart-data-validation
+
+# 可视化数据验证 / Visualization data validation
+visualization-data-validation/
+*.visualization-data-validation
+
+tests/data/

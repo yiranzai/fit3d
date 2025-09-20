@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 渐变定义 -->
+    <linearGradient id="mountainGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7ED321;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F5A623;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="trackGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4ECDC4;stop-opacity:1" />
+    </linearGradient>
+    
+    <radialGradient id="globeGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#4682B4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E8B57;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- 阴影滤镜 -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+    
+    <!-- 发光效果 -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 背景圆形 -->
+  <circle cx="100" cy="100" r="95" fill="url(#globeGradient)" filter="url(#shadow)"/>
+  
+  <!-- 地图网格线 -->
+  <g stroke="#FFFFFF" stroke-width="0.5" opacity="0.3">
+    <!-- 经线 -->
+    <line x1="50" y1="20" x2="50" y2="180"/>
+    <line x1="100" y1="20" x2="100" y2="180"/>
+    <line x1="150" y1="20" x2="150" y2="180"/>
+    <!-- 纬线 -->
+    <line x1="20" y1="50" x2="180" y2="50"/>
+    <line x1="20" y1="100" x2="180" y2="100"/>
+    <line x1="20" y1="150" x2="180" y2="150"/>
+  </g>
+  
+  <!-- 3D山脉 -->
+  <g transform="translate(100, 100)">
+    <!-- 主山脉 -->
+    <path d="M-60,40 L-40,20 L-20,30 L0,10 L20,25 L40,15 L60,35 L60,60 L-60,60 Z" 
+          fill="url(#mountainGradient)" 
+          filter="url(#shadow)"/>
+    
+    <!-- 山峰高光 -->
+    <path d="M-40,20 L-20,30 L0,10 L20,25 L40,15 L40,35 L-40,35 Z" 
+          fill="#FFFFFF" 
+          opacity="0.2"/>
+  </g>
+  
+  <!-- 运动轨迹线 -->
+  <g stroke="url(#trackGradient)" stroke-width="3" fill="none" filter="url(#glow)">
+    <!-- 主要轨迹 -->
+    <path d="M30,160 Q60,140 100,120 Q140,100 170,80" 
+          stroke-dasharray="5,5" 
+          opacity="0.8"/>
+    
+    <!-- 次要轨迹 -->
+    <path d="M40,150 Q80,130 120,110 Q160,90 180,70" 
+          stroke-width="2" 
+          opacity="0.6"/>
+  </g>
+  
+  <!-- 轨迹点 -->
+  <g fill="url(#trackGradient)">
+    <circle cx="30" cy="160" r="3" filter="url(#glow)"/>
+    <circle cx="100" cy="120" r="4" filter="url(#glow)"/>
+    <circle cx="170" cy="80" r="3" filter="url(#glow)"/>
+  </g>
+  
+  <!-- 3D效果 - 立体边框 -->
+  <g stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.8">
+    <!-- 顶部边框 -->
+    <ellipse cx="100" cy="60" rx="80" ry="20" opacity="0.6"/>
+    <!-- 底部边框 -->
+    <ellipse cx="100" cy="140" rx="80" ry="20" opacity="0.4"/>
+  </g>
+  
+  <!-- 项目名称 -->
+  <text x="100" y="190" 
+        text-anchor="middle" 
+        font-family="Arial, sans-serif" 
+        font-size="16" 
+        font-weight="bold" 
+        fill="#2C3E50">Fit3D</text>
+  
+  <!-- 装饰性元素 -->
+  <g opacity="0.6">
+    <!-- 指南针 -->
+    <circle cx="160" cy="40" r="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <line x1="160" y1="28" x2="160" y2="52" stroke="#FF6B6B" stroke-width="2"/>
+    <line x1="148" y1="40" x2="172" y2="40" stroke="#FF6B6B" stroke-width="2"/>
+    <circle cx="160" cy="40" r="2" fill="#FF6B6B"/>
+  </g>
+  
+  <!-- 数据点 -->
+  <g fill="#4ECDC4" opacity="0.7">
+    <circle cx="40" cy="40" r="2"/>
+    <circle cx="45" cy="45" r="1.5"/>
+    <circle cx="50" cy="50" r="2"/>
+    <circle cx="55" cy="45" r="1.5"/>
+    <circle cx="60" cy="40" r="2"/>
+  </g>
+</svg>
