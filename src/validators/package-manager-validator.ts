@@ -362,7 +362,7 @@ export class PackageManagerValidator {
   /**
    * 获取严重程度
    */
-  private getSeverity(file: string, command: string, line: string): 'error' | 'warning' | 'info' {
+  private getSeverity(file: string, _command: string, line: string): 'error' | 'warning' | 'info' {
     // 在package.json中的scripts是错误
     if (file === 'package.json' && line.includes('"scripts"')) {
       return 'error';

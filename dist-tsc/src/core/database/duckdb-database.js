@@ -2,36 +2,31 @@
  * DuckDB数据库实现 - 用于分析查询
  * DuckDB Database Implementation - For Analytical Queries
  */
-
-import { Database } from 'duckdb';
-import path from 'path';
-import { MapProvider, MapStyle, TileCache, MapUsageStats } from '@/types';
-
+import duckdb from 'duckdb';
+// import path from 'path';
+// import { MapProvider, MapStyle, TileCache, MapUsageStats } from '@/types';
 export class DuckDBDatabase {
-  private db: Database;
-  private dbPath: string;
-
-  constructor(dbPath: string) {
-    this.dbPath = dbPath;
-    this.db = new Database(dbPath);
-  }
-
-  /**
-   * 初始化分析数据库
-   * Initialize analytical database
-   */
-  async initialize(): Promise<void> {
-    await this.createAnalyticalTables();
-    await this.createViews();
-  }
-
-  /**
-   * 创建分析表
-   * Create analytical tables
-   */
-  private async createAnalyticalTables(): Promise<void> {
-    // 创建地图提供商分析表
-    await this.run(`
+    db;
+    // private dbPath: string;
+    constructor(dbPath) {
+        // this.dbPath = dbPath;
+        this.db = new duckdb.Database(dbPath);
+    }
+    /**
+     * 初始化分析数据库
+     * Initialize analytical database
+     */
+    async initialize() {
+        await this.createAnalyticalTables();
+        await this.createViews();
+    }
+    /**
+     * 创建分析表
+     * Create analytical tables
+     */
+    async createAnalyticalTables() {
+        // 创建地图提供商分析表
+        await this.run(`
       CREATE TABLE IF NOT EXISTS map_providers_analytics (
         id VARCHAR PRIMARY KEY,
         name VARCHAR NOT NULL,
@@ -43,9 +38,8 @@ export class DuckDBDatabase {
         updated_at TIMESTAMP
       )
     `);
-
-    // 创建地图样式分析表
-    await this.run(`
+        // 创建地图样式分析表
+        await this.run(`
       CREATE TABLE IF NOT EXISTS map_styles_analytics (
         id VARCHAR PRIMARY KEY,
         provider_id VARCHAR NOT NULL,
@@ -59,9 +53,8 @@ export class DuckDBDatabase {
         updated_at TIMESTAMP
       )
     `);
-
-    // 创建瓦片缓存分析表
-    await this.run(`
+        // 创建瓦片缓存分析表
+        await this.run(`
       CREATE TABLE IF NOT EXISTS tile_cache_analytics (
         id VARCHAR PRIMARY KEY,
         provider_id VARCHAR NOT NULL,
@@ -75,9 +68,8 @@ export class DuckDBDatabase {
         access_count INTEGER DEFAULT 1
       )
     `);
-
-    // 创建地图使用统计分析表
-    await this.run(`
+        // 创建地图使用统计分析表
+        await this.run(`
       CREATE TABLE IF NOT EXISTS map_usage_analytics (
         id VARCHAR PRIMARY KEY,
         provider_id VARCHAR NOT NULL,
@@ -91,15 +83,14 @@ export class DuckDBDatabase {
         updated_at TIMESTAMP
       )
     `);
-  }
-
-  /**
-   * 创建分析视图
-   * Create analytical views
-   */
-  private async createViews(): Promise<void> {
-    // 地图性能分析视图
-    await this.run(`
+    }
+    /**
+     * 创建分析视图
+     * Create analytical views
+     */
+    async createViews() {
+        // 地图性能分析视图
+        await this.run(`
       CREATE OR REPLACE VIEW map_performance_analytics AS
       SELECT 
         p.name as provider_name,
@@ -119,9 +110,8 @@ export class DuckDBDatabase {
       JOIN map_styles_analytics s ON tc.style_id = s.id
       GROUP BY p.id, s.id, p.name, p.name_zh, s.name, s.name_zh
     `);
-
-    // 用户行为分析视图
-    await this.run(`
+        // 用户行为分析视图
+        await this.run(`
       CREATE OR REPLACE VIEW user_behavior_analytics AS
       SELECT 
         DATE(created_at) as usage_date,
@@ -136,9 +126,8 @@ export class DuckDBDatabase {
       GROUP BY DATE(created_at), provider_id, style_id
       ORDER BY usage_date DESC, daily_tile_requests DESC
     `);
-
-    // 缓存效率分析视图
-    await this.run(`
+        // 缓存效率分析视图
+        await this.run(`
       CREATE OR REPLACE VIEW cache_efficiency_analytics AS
       SELECT 
         provider_id,
@@ -152,106 +141,98 @@ export class DuckDBDatabase {
       FROM tile_cache_analytics
       GROUP BY provider_id, style_id
     `);
-  }
-
-  /**
-   * 同步SQLite数据到DuckDB
-   * Sync SQLite data to DuckDB
-   */
-  async syncFromSQLite(sqliteDb: any): Promise<void> {
-    // 同步地图提供商数据
-    const providers = await sqliteDb.all('SELECT * FROM map_providers');
-    await this.run('DELETE FROM map_providers_analytics');
-    for (const provider of providers) {
-      await this.run(`
+    }
+    /**
+     * 同步SQLite数据到DuckDB
+     * Sync SQLite data to DuckDB
+     */
+    async syncFromSQLite(sqliteDb) {
+        // 同步地图提供商数据
+        const providers = await sqliteDb.all('SELECT * FROM map_providers');
+        await this.run('DELETE FROM map_providers_analytics');
+        for (const provider of providers) {
+            await this.run(`
         INSERT INTO map_providers_analytics (
           id, name, name_zh, is_open_source, is_active, sort_order, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `, [
-        provider.id, provider.name, provider.name_zh, provider.is_open_source,
-        provider.is_active, provider.sort_order, provider.created_at, provider.updated_at
-      ]);
-    }
-
-    // 同步地图样式数据
-    const styles = await sqliteDb.all('SELECT * FROM map_styles');
-    await this.run('DELETE FROM map_styles_analytics');
-    for (const style of styles) {
-      await this.run(`
+                provider.id, provider.name, provider.name_zh, provider.is_open_source,
+                provider.is_active, provider.sort_order, provider.created_at, provider.updated_at
+            ]);
+        }
+        // 同步地图样式数据
+        const styles = await sqliteDb.all('SELECT * FROM map_styles');
+        await this.run('DELETE FROM map_styles_analytics');
+        for (const style of styles) {
+            await this.run(`
         INSERT INTO map_styles_analytics (
           id, provider_id, name, name_zh, type, is_default, is_active, sort_order, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
-        style.id, style.provider_id, style.name, style.name_zh, style.type,
-        style.is_default, style.is_active, style.sort_order, style.created_at, style.updated_at
-      ]);
-    }
-
-    // 同步瓦片缓存数据
-    const tiles = await sqliteDb.all('SELECT * FROM tile_cache');
-    await this.run('DELETE FROM tile_cache_analytics');
-    for (const tile of tiles) {
-      await this.run(`
+                style.id, style.provider_id, style.name, style.name_zh, style.type,
+                style.is_default, style.is_active, style.sort_order, style.created_at, style.updated_at
+            ]);
+        }
+        // 同步瓦片缓存数据
+        const tiles = await sqliteDb.all('SELECT * FROM tile_cache');
+        await this.run('DELETE FROM tile_cache_analytics');
+        for (const tile of tiles) {
+            await this.run(`
         INSERT INTO tile_cache_analytics (
           id, provider_id, style_id, z, x, y, file_size, created_at, accessed_at, access_count
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
-        tile.id, tile.provider_id, tile.style_id, tile.z, tile.x, tile.y,
-        tile.file_size, tile.created_at, tile.accessed_at, tile.access_count
-      ]);
-    }
-
-    // 同步使用统计数据
-    const usageStats = await sqliteDb.all('SELECT * FROM map_usage_stats');
-    await this.run('DELETE FROM map_usage_analytics');
-    for (const stat of usageStats) {
-      await this.run(`
+                tile.id, tile.provider_id, tile.style_id, tile.z, tile.x, tile.y,
+                tile.file_size, tile.created_at, tile.accessed_at, tile.access_count
+            ]);
+        }
+        // 同步使用统计数据
+        const usageStats = await sqliteDb.all('SELECT * FROM map_usage_stats');
+        await this.run('DELETE FROM map_usage_analytics');
+        for (const stat of usageStats) {
+            await this.run(`
         INSERT INTO map_usage_analytics (
           id, provider_id, style_id, usage_count, last_used, total_tiles_loaded,
           total_data_transferred, average_load_time, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
-        stat.id, stat.provider_id, stat.style_id, stat.usage_count, stat.last_used,
-        stat.total_tiles_loaded, stat.total_data_transferred, stat.average_load_time,
-        stat.created_at, stat.updated_at
-      ]);
+                stat.id, stat.provider_id, stat.style_id, stat.usage_count, stat.last_used,
+                stat.total_tiles_loaded, stat.total_data_transferred, stat.average_load_time,
+                stat.created_at, stat.updated_at
+            ]);
+        }
     }
-  }
-
-  /**
-   * 获取地图性能分析
-   * Get map performance analytics
-   */
-  async getMapPerformanceAnalytics(): Promise<any[]> {
-    return await this.all('SELECT * FROM map_performance_analytics ORDER BY total_tiles DESC');
-  }
-
-  /**
-   * 获取用户行为分析
-   * Get user behavior analytics
-   */
-  async getUserBehaviorAnalytics(days: number = 30): Promise<any[]> {
-    return await this.all(`
+    /**
+     * 获取地图性能分析
+     * Get map performance analytics
+     */
+    async getMapPerformanceAnalytics() {
+        return await this.all('SELECT * FROM map_performance_analytics ORDER BY total_tiles DESC');
+    }
+    /**
+     * 获取用户行为分析
+     * Get user behavior analytics
+     */
+    async getUserBehaviorAnalytics(days = 30) {
+        return await this.all(`
       SELECT * FROM user_behavior_analytics 
       WHERE usage_date >= DATE('now', '-${days} days')
       ORDER BY usage_date DESC
     `);
-  }
-
-  /**
-   * 获取缓存效率分析
-   * Get cache efficiency analytics
-   */
-  async getCacheEfficiencyAnalytics(): Promise<any[]> {
-    return await this.all('SELECT * FROM cache_efficiency_analytics ORDER BY cache_hit_rate DESC');
-  }
-
-  /**
-   * 获取提供商性能对比
-   * Get provider performance comparison
-   */
-  async getProviderPerformanceComparison(): Promise<any[]> {
-    return await this.all(`
+    }
+    /**
+     * 获取缓存效率分析
+     * Get cache efficiency analytics
+     */
+    async getCacheEfficiencyAnalytics() {
+        return await this.all('SELECT * FROM cache_efficiency_analytics ORDER BY cache_hit_rate DESC');
+    }
+    /**
+     * 获取提供商性能对比
+     * Get provider performance comparison
+     */
+    async getProviderPerformanceComparison() {
+        return await this.all(`
       SELECT 
         provider_id,
         provider_name,
@@ -266,14 +247,13 @@ export class DuckDBDatabase {
       GROUP BY provider_id, provider_name, provider_name_zh
       ORDER BY total_tiles DESC
     `);
-  }
-
-  /**
-   * 获取样式使用统计
-   * Get style usage statistics
-   */
-  async getStyleUsageStatistics(): Promise<any[]> {
-    return await this.all(`
+    }
+    /**
+     * 获取样式使用统计
+     * Get style usage statistics
+     */
+    async getStyleUsageStatistics() {
+        return await this.all(`
       SELECT 
         style_id,
         style_name,
@@ -287,14 +267,13 @@ export class DuckDBDatabase {
       FROM map_performance_analytics
       ORDER BY total_tiles DESC
     `);
-  }
-
-  /**
-   * 获取时间序列分析
-   * Get time series analysis
-   */
-  async getTimeSeriesAnalysis(days: number = 30): Promise<any[]> {
-    return await this.all(`
+    }
+    /**
+     * 获取时间序列分析
+     * Get time series analysis
+     */
+    async getTimeSeriesAnalysis(days = 30) {
+        return await this.all(`
       SELECT 
         usage_date,
         SUM(daily_tile_requests) as total_requests,
@@ -307,14 +286,13 @@ export class DuckDBDatabase {
       GROUP BY usage_date
       ORDER BY usage_date DESC
     `);
-  }
-
-  /**
-   * 获取热门瓦片分析
-   * Get popular tiles analysis
-   */
-  async getPopularTilesAnalysis(limit: number = 100): Promise<any[]> {
-    return await this.all(`
+    }
+    /**
+     * 获取热门瓦片分析
+     * Get popular tiles analysis
+     */
+    async getPopularTilesAnalysis(limit = 100) {
+        return await this.all(`
       SELECT 
         provider_id,
         style_id,
@@ -329,14 +307,13 @@ export class DuckDBDatabase {
       ORDER BY access_count DESC
       LIMIT ${limit}
     `);
-  }
-
-  /**
-   * 获取缓存优化建议
-   * Get cache optimization recommendations
-   */
-  async getCacheOptimizationRecommendations(): Promise<any[]> {
-    return await this.all(`
+    }
+    /**
+     * 获取缓存优化建议
+     * Get cache optimization recommendations
+     */
+    async getCacheOptimizationRecommendations() {
+        return await this.all(`
       SELECT 
         provider_id,
         style_id,
@@ -354,69 +331,70 @@ export class DuckDBDatabase {
       FROM cache_efficiency_analytics
       ORDER BY cache_hit_rate ASC
     `);
-  }
-
-  /**
-   * 执行SQL查询
-   * Execute SQL query
-   */
-  private async run(sql: string, params: any[] = []): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.db.run(sql, params, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-  }
-
-  /**
-   * 执行查询并返回所有结果
-   * Execute query and return all results
-   */
-  private async all(sql: string, params: any[] = []): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      this.db.all(sql, params, (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows || []);
-        }
-      });
-    });
-  }
-
-  /**
-   * 执行查询并返回单个结果
-   * Execute query and return single result
-   */
-  private async get(sql: string, params: any[] = []): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.db.get(sql, params, (err, row) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(row);
-        }
-      });
-    });
-  }
-
-  /**
-   * 关闭数据库连接
-   * Close database connection
-   */
-  async close(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.db.close((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-  }
+    }
+    /**
+     * 执行SQL查询
+     * Execute SQL query
+     */
+    async run(sql, params = []) {
+        return new Promise((resolve, reject) => {
+            this.db.run(sql, params, (err) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+    }
+    /**
+     * 执行查询并返回所有结果
+     * Execute query and return all results
+     */
+    async all(sql, params = []) {
+        return new Promise((resolve, reject) => {
+            this.db.all(sql, params, (err, rows) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(rows || []);
+                }
+            });
+        });
+    }
+    /**
+     * 执行查询并返回单个结果
+     * Execute query and return single result
+     */
+    // private async get(sql: string, params: any[] = []): Promise<any> {
+    //   return new Promise((resolve, reject) => {
+    //     const connection = this.db.connect();
+    //     connection.all(sql, params, (err: any, rows: any[]) => {
+    //       if (err) {
+    //         reject(err);
+    //       } else {
+    //         resolve(rows?.[0] || null);
+    //       }
+    //     });
+    //   });
+    // }
+    /**
+     * 关闭数据库连接
+     * Close database connection
+     */
+    async close() {
+        return new Promise((resolve, reject) => {
+            this.db.close((err) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+    }
 }
+//# sourceMappingURL=duckdb-database.js.map

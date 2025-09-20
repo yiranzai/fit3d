@@ -3,30 +3,32 @@
  * SQLite Database Implementation
  */
 
-import Database from 'sqlite3';
-import { promisify } from 'util';
-import path from 'path';
-import fs from 'fs';
-import { MapProvider, MapStyle, UserMapPreferences, TileCache, OfflineMapCache, MapUsageStats } from '@/types';
+import Database from 'better-sqlite3';
+// import path from 'path';
+// import fs from 'fs';
+import { MapProvider, MapStyle, TileCache } from '../../types/index.js';
 
 export class SQLiteDatabase {
   private db: Database.Database;
-  private dbPath: string;
+  // private dbPath: string;
 
   constructor(dbPath: string) {
-    this.dbPath = dbPath;
-    this.db = new Database.Database(dbPath);
-    
-    // 将回调函数转换为Promise
-    this.run = promisify(this.db.run.bind(this.db));
-    this.get = promisify(this.db.get.bind(this.db));
-    this.all = promisify(this.db.all.bind(this.db));
+    // this.dbPath = dbPath;
+    this.db = new Database(dbPath);
   }
 
-  // Promise化的数据库方法
-  private run: (sql: string, params?: any[]) => Promise<Database.RunResult>;
-  private get: (sql: string, params?: any[]) => Promise<any>;
-  private all: (sql: string, params?: any[]) => Promise<any[]>;
+  // 数据库方法
+  public run(sql: string, params?: any[]): Database.RunResult {
+    return this.db.prepare(sql).run(...(params || []));
+  }
+
+  public get(sql: string, params?: any[]): any {
+    return this.db.prepare(sql).get(...(params || []));
+  }
+
+  public all(sql: string, params?: any[]): any[] {
+    return this.db.prepare(sql).all(...(params || []));
+  }
 
   /**
    * 初始化数据库模式
@@ -621,15 +623,7 @@ export class SQLiteDatabase {
    * Close database connection
    */
   async close(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.db.close((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+    this.db.close();
   }
 
   // 私有辅助方法：将数据库行映射为对象

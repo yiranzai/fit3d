@@ -1,5 +1,5 @@
-import Database from 'sqlite3';
-import { promisify } from 'util';
+import Database from 'better-sqlite3';
+// import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 
@@ -13,20 +13,25 @@ export class SQLiteDatabase {
 
   constructor(dbPath: string = 'build-system.db') {
     this.dbPath = path.resolve(dbPath);
-    this.db = new Database.Database(this.dbPath);
-    
-    // 将回调风格的API转换为Promise
-    this.run = promisify(this.db.run.bind(this.db));
-    this.get = promisify(this.db.get.bind(this.db));
-    this.all = promisify(this.db.all.bind(this.db));
-    this.exec = promisify(this.db.exec.bind(this.db));
+    this.db = new Database(this.dbPath);
   }
 
-  // Promise化的数据库方法
-  public run: (sql: string, params?: any[]) => Promise<Database.RunResult>;
-  public get: (sql: string, params?: any[]) => Promise<any>;
-  public all: (sql: string, params?: any[]) => Promise<any[]>;
-  public exec: (sql: string) => Promise<void>;
+  // 数据库方法
+  public run(sql: string, params?: any[]): Database.RunResult {
+    return this.db.prepare(sql).run(...(params || []));
+  }
+
+  public get(sql: string, params?: any[]): any {
+    return this.db.prepare(sql).get(...(params || []));
+  }
+
+  public all(sql: string, params?: any[]): any[] {
+    return this.db.prepare(sql).all(...(params || []));
+  }
+
+  public exec(sql: string): void {
+    this.db.exec(sql);
+  }
 
   /**
    * 初始化数据库架构
@@ -260,15 +265,7 @@ export class SQLiteDatabase {
    * 关闭数据库连接
    */
   async close(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.db.close((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+    this.db.close();
   }
 
   /**

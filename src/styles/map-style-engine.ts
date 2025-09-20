@@ -3,8 +3,8 @@
  * Map Style Engine
  */
 
-import { MapStyle, MapStyleConfig, StyleModification, MapStyleType, ActivityType } from '@/types';
-import { SQLiteDatabase } from '@/core/database/sqlite-database';
+import { MapStyle, MapStyleConfig, StyleModification, MapStyleType, ActivityType } from '../types/index.js';
+import { SQLiteDatabase } from '../core/database/sqlite-database.js';
 import { EventEmitter } from 'events';
 
 export interface StylePreview {
@@ -68,7 +68,7 @@ export class MapStyleEngine extends EventEmitter {
       // 设置默认样式
       if (this.styles.size > 0 && !this.currentStyle) {
         const defaultStyle = Array.from(this.styles.values()).find(style => style.isDefault);
-        this.currentStyle = defaultStyle ? defaultStyle.id : Array.from(this.styles.keys())[0];
+        this.currentStyle = defaultStyle ? defaultStyle.id : (Array.from(this.styles.keys())[0] || null);
       }
 
       this.emit('stylesLoaded', Array.from(this.styles.values()));
@@ -169,8 +169,8 @@ export class MapStyleEngine extends EventEmitter {
         providerId: baseStyle.providerId,
         name: options.name,
         nameZh: options.nameZh,
-        description: options.description,
-        descriptionZh: options.descriptionZh,
+        description: options.description || '',
+        descriptionZh: options.descriptionZh || '',
         type: MapStyleType.CUSTOM,
         suitableActivities: options.suitableActivities,
         styleConfig: customConfig,
@@ -276,7 +276,7 @@ export class MapStyleEngine extends EventEmitter {
       // 如果删除的是当前样式，切换到默认样式
       if (this.currentStyle === styleId) {
         const defaultStyle = Array.from(this.styles.values()).find(s => s.isDefault);
-        this.currentStyle = defaultStyle ? defaultStyle.id : Array.from(this.styles.keys())[0];
+        this.currentStyle = defaultStyle ? defaultStyle.id : (Array.from(this.styles.keys())[0] || null);
       }
 
       this.emit('styleDeleted', styleId);
@@ -407,7 +407,7 @@ export class MapStyleEngine extends EventEmitter {
    * 应用过滤器修改
    * Apply filter modification
    */
-  private applyFilterModification(config: MapStyleConfig, modification: StyleModification): MapStyleConfig {
+  private applyFilterModification(config: MapStyleConfig, _modification: StyleModification): MapStyleConfig {
     // 这里可以实现过滤器逻辑
     // 目前只是简单返回配置
     return config;
@@ -417,7 +417,7 @@ export class MapStyleEngine extends EventEmitter {
    * 应用布局修改
    * Apply layout modification
    */
-  private applyLayoutModification(config: MapStyleConfig, modification: StyleModification): MapStyleConfig {
+  private applyLayoutModification(config: MapStyleConfig, _modification: StyleModification): MapStyleConfig {
     // 这里可以实现布局逻辑
     // 目前只是简单返回配置
     return config;
@@ -427,19 +427,19 @@ export class MapStyleEngine extends EventEmitter {
    * 验证样式配置
    * Validate style configuration
    */
-  private validateStyleConfig(config: MapStyleConfig): void {
-    if (!config.tileServer || !config.tileServer.urlTemplate) {
-      throw new Error('Tile server configuration is required');
-    }
+  // private validateStyleConfig(config: MapStyleConfig): void {
+  //   if (!config.tileServer || !config.tileServer.urlTemplate) {
+  //     throw new Error('Tile server configuration is required');
+  //   }
 
-    if (!config.colorScheme || !config.colorScheme.primary) {
-      throw new Error('Color scheme configuration is required');
-    }
+  //   if (!config.colorScheme || !config.colorScheme.primary) {
+  //     throw new Error('Color scheme configuration is required');
+  //   }
 
-    if (config.tileServer.maxZoom < config.tileServer.minZoom) {
-      throw new Error('Max zoom must be greater than or equal to min zoom');
-    }
-  }
+  //   if (config.tileServer.maxZoom < config.tileServer.minZoom) {
+  //     throw new Error('Max zoom must be greater than or equal to min zoom');
+  //   }
+  // }
 
   /**
    * 获取样式统计信息

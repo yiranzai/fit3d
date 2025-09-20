@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
 /**
@@ -8,8 +9,8 @@ import { resolve } from 'path'
 export default defineConfig({
   // 插件配置
   plugins: [
-    // 可以在这里添加React插件等
-    // react(),
+    // React插件
+    react(),
   ],
 
   // 路径解析配置
@@ -31,11 +32,10 @@ export default defineConfig({
     sourcemap: true,
     minify: 'terser',
     rollupOptions: {
+      external: ['sqlite3', 'duckdb', 'canvas', 'sharp', 'commander'],
       output: {
         // 手动代码分割
         manualChunks: {
-          // 第三方库分离
-          vendor: ['commander', 'sqlite3', 'duckdb'],
           // 工具库分离
           utils: ['lodash', 'dayjs'],
         },
@@ -56,12 +56,15 @@ export default defineConfig({
   // 依赖预构建配置
   optimizeDeps: {
     include: [
-      'commander',
-      'sqlite3',
-      'duckdb',
+      'lodash',
+      'dayjs',
     ],
     exclude: [
-      // 排除不需要预构建的依赖
+      'sqlite3',
+      'duckdb',
+      'canvas',
+      'sharp',
+      'commander',
     ],
   },
 

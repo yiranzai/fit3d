@@ -5,7 +5,6 @@
 
 export * from './types';
 export * from './core/database/sqlite-database';
-export * from './core/database/duckdb-database';
 export * from './providers/map-provider-manager';
 export * from './styles/map-style-engine';
 export * from './cache/tile-cache-system';

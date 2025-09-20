@@ -199,8 +199,11 @@ export class ViteConfigManager {
       }
 
       // 设置合理的chunk大小警告限制
-      if (!optimized.build.chunkSizeWarningLimit) {
-        optimized.build.chunkSizeWarningLimit = 1000;
+      if (!optimized.build.rollupOptions) {
+        optimized.build.rollupOptions = {};
+      }
+      if (!optimized.build.rollupOptions.output) {
+        optimized.build.rollupOptions.output = {};
       }
     }
 

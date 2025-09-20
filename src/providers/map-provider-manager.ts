@@ -3,8 +3,8 @@
  * Map Provider Manager
  */
 
-import { MapProvider, MapStyle, ProviderStatus, ErrorCode } from '@/types';
-import { SQLiteDatabase } from '@/core/database/sqlite-database';
+import { MapProvider, MapStyle, ProviderStatus, ErrorCode } from '../types/index.js';
+import { SQLiteDatabase } from '../core/database/sqlite-database.js';
 import { EventEmitter } from 'events';
 
 export interface ProviderHealthCheck {
@@ -81,7 +81,7 @@ export class MapProviderManager extends EventEmitter {
 
       // 设置默认提供商
       if (providers.length > 0 && !this.currentProvider) {
-        this.currentProvider = providers[0].id;
+        this.currentProvider = providers[0]?.id || '';
       }
 
       this.emit('providersLoaded', providers);
@@ -285,7 +285,7 @@ export class MapProviderManager extends EventEmitter {
       // 如果删除的是当前提供商，切换到第一个可用的提供商
       if (this.currentProvider === providerId) {
         const availableProviders = await this.getAvailableProviders();
-        this.currentProvider = availableProviders.length > 0 ? availableProviders[0].id : null;
+        this.currentProvider = availableProviders.length > 0 ? (availableProviders[0]?.id || null) : null;
       }
 
       this.emit('providerDeleted', providerId);
@@ -355,33 +355,40 @@ export class MapProviderManager extends EventEmitter {
       
       // 测试瓦片请求
       const testUrl = this.buildTileUrl(provider, 0, 0, 0);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch(testUrl, { 
         method: 'HEAD',
-        timeout: 5000 
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       const responseTime = Date.now() - startTime;
       const isHealthy = response.ok;
 
       // 更新健康检查状态
-      this.healthChecks.set(providerId, {
+      const healthCheck: ProviderHealthCheck = {
         providerId,
         status: isHealthy ? ProviderStatus.ACTIVE : ProviderStatus.ERROR,
         responseTime,
         lastChecked: new Date(),
-        errorMessage: isHealthy ? undefined : `HTTP ${response.status}`
-      });
+        errorMessage: isHealthy ? '' : `HTTP ${response.status}`
+      };
+      this.healthChecks.set(providerId, healthCheck);
 
       return isHealthy;
     } catch (error) {
       // 更新健康检查状态
-      this.healthChecks.set(providerId, {
+      const errorHealthCheck: ProviderHealthCheck = {
         providerId,
         status: ProviderStatus.ERROR,
         responseTime: 0,
         lastChecked: new Date(),
         errorMessage: error instanceof Error ? error.message : 'Unknown error'
-      });
+      };
+      this.healthChecks.set(providerId, errorHealthCheck);
 
       return false;
     }
@@ -461,7 +468,7 @@ export class MapProviderManager extends EventEmitter {
    */
   private buildTileUrl(provider: MapProvider, z: number, x: number, y: number): string {
     const config = provider.apiConfig;
-    let url = config.baseUrl;
+    let url = config.baseUrl || '';
     
     // 替换URL模板中的占位符
     url = url.replace('{z}', z.toString());
@@ -471,7 +478,7 @@ export class MapProviderManager extends EventEmitter {
     // 替换子域名
     if (config.subdomains.length > 0) {
       const subdomain = config.subdomains[Math.floor(Math.random() * config.subdomains.length)];
-      url = url.replace('{s}', subdomain);
+      url = url.replace('{s}', subdomain || '');
     }
     
     return url;

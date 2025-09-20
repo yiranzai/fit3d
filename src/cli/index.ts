@@ -6,13 +6,12 @@
  */
 
 import { Command } from 'commander';
-import { SQLiteDatabase } from '@/core/database/sqlite-database';
-import { DuckDBDatabase } from '@/core/database/duckdb-database';
-import { MapProviderManager } from '@/providers/map-provider-manager';
-import { MapStyleEngine } from '@/styles/map-style-engine';
-import { TileCacheSystem } from '@/cache/tile-cache-system';
-import { MapVisualizationEngine } from '@/visualization/map-visualization-engine';
-import { CacheStrategy } from '@/types';
+import { SQLiteDatabase } from '../core/database/sqlite-database.js';
+import { MapProviderManager } from '../providers/map-provider-manager.js';
+import { MapStyleEngine } from '../styles/map-style-engine.js';
+import { TileCacheSystem } from '../cache/tile-cache-system.js';
+import { MapVisualizationEngine } from '../visualization/map-visualization-engine.js';
+import { CacheStrategy } from '../types/index.js';
 import path from 'path';
 import os from 'os';
 
@@ -20,7 +19,6 @@ const program = new Command();
 
 // 全局配置
 let db: SQLiteDatabase;
-let duckDb: DuckDBDatabase;
 let providerManager: MapProviderManager;
 let styleEngine: MapStyleEngine;
 let cacheSystem: TileCacheSystem;
@@ -32,8 +30,7 @@ let visualizationEngine: MapVisualizationEngine;
  */
 async function initializeSystem(dataDir?: string): Promise<void> {
   const appDataDir = dataDir || path.join(os.homedir(), '.fit3d');
-  const sqlitePath = path.join(appDataDir, 'maps.db');
-  const duckDbPath = path.join(appDataDir, 'maps-analytics.db');
+  // const sqlitePath = path.join(appDataDir, 'maps.db'); // 暂时使用内存数据库
 
   console.log('🚀 初始化Fit3D地图系统...');
   console.log(`📁 数据目录: ${appDataDir}`);
@@ -45,13 +42,9 @@ async function initializeSystem(dataDir?: string): Promise<void> {
       fs.mkdirSync(appDataDir, { recursive: true });
     }
 
-    // 初始化数据库
-    db = new SQLiteDatabase(sqlitePath);
+    // 初始化数据库 (使用内存数据库进行测试)
+    db = new SQLiteDatabase(':memory:');
     await db.initialize();
-
-    duckDb = new DuckDBDatabase(duckDbPath);
-    await duckDb.initialize();
-    await duckDb.syncFromSQLite(db);
 
     // 初始化缓存系统
     const cacheConfig = {
@@ -459,13 +452,13 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
   console.error('❌ 未处理的Promise拒绝:', reason);
   process.exit(1);
 });
 
 // 启动程序
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
     console.error('❌ 程序启动失败:', error);
     process.exit(1);

@@ -76,39 +76,39 @@ git clone https://github.com/yiranzai/fit3d.git
 cd fit3d
 
 # 安装依赖
-npm install
+pnpm install
 
 # 构建项目
-npm run build
+pnpm run build
 ```
 
 ### 初始化系统 / Initialize System
 
 ```bash
 # 使用默认设置初始化
-npm run cli init
+pnpm run cli init
 
 # 或指定自定义数据目录
-npm run cli init --data-dir ~/my-map-data
+pnpm run cli init --data-dir ~/my-map-data
 ```
 
 ### 基本使用 / Basic Usage
 
 ```bash
 # 查看可用的地图提供商
-npm run cli map-providers list
+pnpm run cli map-providers list
 
 # 查看可用的地图样式
-npm run cli map-styles list
+pnpm run cli map-styles list
 
 # 切换地图样式
-npm run cli map-styles use osm-standard
+pnpm run cli map-styles use osm-standard
 
 # 查看缓存统计
-npm run cli cache stats
+pnpm run cli cache stats
 
 # 生成活动地图
-npm run cli map generate activity-123 --style opentopomap
+pnpm run cli map generate activity-123 --style opentopomap
 ```
 
 ## 项目结构 / Project Structure
@@ -139,19 +139,19 @@ fit3d/
 
 ```bash
 # 安装开发依赖
-npm install
+pnpm install
 
 # 启动开发服务器
-npm run dev
+pnpm run dev
 
 # 运行测试
 npm test
 
 # 代码检查
-npm run lint
+pnpm run lint
 
 # 格式化代码
-npm run format
+pnpm run format
 ```
 
 ### 添加新的地图提供商 / Adding New Map Providers

@@ -3,10 +3,10 @@
  * Map Visualization Engine
  */
 
-import { MapProvider, MapStyle, TileCache, BoundingBox, ActivityType } from '@/types';
-import { MapProviderManager } from '@/providers/map-provider-manager';
-import { MapStyleEngine } from '@/styles/map-style-engine';
-import { TileCacheSystem } from '@/cache/tile-cache-system';
+import { BoundingBox, ActivityType } from '../types/index.js';
+import { MapProviderManager } from '../providers/map-provider-manager.js';
+import { MapStyleEngine } from '../styles/map-style-engine.js';
+import { TileCacheSystem } from '../cache/tile-cache-system.js';
 import { EventEmitter } from 'events';
 
 export interface MapViewport {
@@ -236,7 +236,7 @@ export class MapVisualizationEngine extends EventEmitter {
       });
 
       // 临时切换样式
-      const originalStyle = this.styleEngine.getCurrentStyle();
+      // const originalStyle = this.styleEngine.getCurrentStyle();
       await this.styleEngine.switchStyle(styleId);
 
       // 渲染预览
@@ -254,9 +254,9 @@ export class MapVisualizationEngine extends EventEmitter {
     } finally {
       // 恢复原始状态
       this.setViewport(originalViewport);
-      if (originalStyle) {
-        await this.styleEngine.switchStyle(originalStyle.id);
-      }
+      // if (currentStyle) {
+      //   await this.styleEngine.switchStyle(currentStyle.id);
+      // }
     }
   }
 
@@ -386,7 +386,7 @@ export class MapVisualizationEngine extends EventEmitter {
    * 绘制地图瓦片
    * Draw map tiles
    */
-  private async drawMapTiles(ctx: CanvasRenderingContext2D, options: MapRenderOptions): Promise<void> {
+  private async drawMapTiles(ctx: CanvasRenderingContext2D, _options: MapRenderOptions): Promise<void> {
     const provider = this.providerManager.getCurrentProvider();
     const style = this.styleEngine.getCurrentStyle();
 
@@ -446,7 +446,7 @@ export class MapVisualizationEngine extends EventEmitter {
       
       for (let i = 0; i < track.coordinates.length; i++) {
         const coord = track.coordinates[i];
-        const screenPos = this.latLngToScreen(coord.lat, coord.lng, options.width, options.height);
+        const screenPos = this.latLngToScreen(coord?.lat || 0, coord?.lng || 0, options.width, options.height);
         
         if (i === 0) {
           ctx.moveTo(screenPos.x, screenPos.y);
@@ -476,13 +476,13 @@ export class MapVisualizationEngine extends EventEmitter {
 
       // 起点
       const startCoord = track.coordinates[0];
-      const startPos = this.latLngToScreen(startCoord.lat, startCoord.lng, options.width, options.height);
+      const startPos = this.latLngToScreen(startCoord?.lat || 0, startCoord?.lng || 0, options.width, options.height);
       this.drawMarker(ctx, startPos.x, startPos.y, 'start', track.activityType);
 
       // 终点
       if (track.coordinates.length > 1) {
         const endCoord = track.coordinates[track.coordinates.length - 1];
-        const endPos = this.latLngToScreen(endCoord.lat, endCoord.lng, options.width, options.height);
+        const endPos = this.latLngToScreen(endCoord?.lat || 0, endCoord?.lng || 0, options.width, options.height);
         this.drawMarker(ctx, endPos.x, endPos.y, 'end', track.activityType);
       }
     }
@@ -668,7 +668,7 @@ export class MapVisualizationEngine extends EventEmitter {
       for (let i = 1; i < track.coordinates.length; i++) {
         const prev = track.coordinates[i - 1];
         const curr = track.coordinates[i];
-        totalDistance += this.calculateDistance(prev.lat, prev.lng, curr.lat, curr.lng);
+        totalDistance += this.calculateDistance(prev?.lat || 0, prev?.lng || 0, curr?.lat || 0, curr?.lng || 0);
       }
     }
     
@@ -733,7 +733,7 @@ export class MapVisualizationEngine extends EventEmitter {
    * 从缓冲区加载图像
    * Load image from buffer
    */
-  private async loadImageFromBuffer(buffer: Buffer): Promise<HTMLImageElement> {
+  private async loadImageFromBuffer(_buffer: Buffer): Promise<HTMLImageElement> {
     // 这里应该实现实际的图像加载
     // 目前返回模拟对象
     return {
@@ -783,7 +783,7 @@ export class MapVisualizationEngine extends EventEmitter {
    * 画布转缓冲区
    * Convert canvas to buffer
    */
-  private canvasToBuffer(canvas: HTMLCanvasElement, format: string, quality?: number): Buffer {
+  private canvasToBuffer(_canvas: HTMLCanvasElement, _format: string, _quality?: number): Buffer {
     // 这里应该实现实际的画布转换
     // 目前返回模拟的PNG数据
     return Buffer.from('mock-png-data');

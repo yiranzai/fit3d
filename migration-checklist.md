@@ -24,8 +24,8 @@ fit3d/
 ### 需要迁移的文件
 - [x] `package.json` - 需要更新依赖和脚本
 - [x] `tsconfig.json` - 需要更新配置
-- [ ] `vite.config.ts` - 需要创建新的Vite配置
-- [ ] `.npmrc` - 需要创建pnpm配置
+- [x] `vite.config.ts` - 需要创建新的Vite配置
+- [x] `.npmrc` - 需要创建pnpm配置
 - [ ] `pnpm-workspace.yaml` - 如果需要工作区支持
 
 ### 需要备份的文件
@@ -91,8 +91,8 @@ fit3d/
 - 充分的测试覆盖
 
 ## 成功标准
-- [ ] 所有npm相关配置和脚本已完全移除
-- [ ] pnpm和Vite配置正常工作
+- [x] 所有npm相关配置和脚本已完全移除
+- [x] pnpm和Vite配置正常工作
 - [ ] 构建性能提升50%以上
 - [ ] 团队开发环境100%一致性
 - [ ] 完整的迁移文档和培训材料
