@@ -47,7 +47,7 @@ export declare class ViteConfigManager {
     /**
      * 优化Vite配置
      */
-    optimizeConfig(config: ViteConfiguration): Promise<ViteConfiguration>;
+    optimizeConfig(config: Partial<ViteConfiguration>): Promise<ViteConfiguration>;
     /**
      * 获取默认配置
      */

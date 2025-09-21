@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { PackageManagerValidator } from '../../src/validators/package-manager-validator.js';
+import { PackageManagerValidator } from '../../src/validators/package-manager-validator';
 import fs from 'fs';
 import path from 'path';
 
@@ -7,17 +7,37 @@ describe('PackageManagerValidator测试', () => {
   let validator: PackageManagerValidator;
   const testProjectRoot = 'test-project';
 
-  beforeEach(() => {
-    validator = new PackageManagerValidator(testProjectRoot);
-    
+  beforeAll(() => {
     // 创建测试项目目录
     if (!fs.existsSync(testProjectRoot)) {
       fs.mkdirSync(testProjectRoot, { recursive: true });
     }
   });
 
+  beforeEach(() => {
+    validator = new PackageManagerValidator(testProjectRoot);
+  });
+
   afterEach(() => {
-    // 清理测试项目目录
+    // 清理测试项目目录中的文件，但保留目录
+    if (fs.existsSync(testProjectRoot)) {
+      try {
+        const files = fs.readdirSync(testProjectRoot);
+        for (const file of files) {
+          const filePath = path.join(testProjectRoot, file);
+          if (fs.statSync(filePath).isFile()) {
+            fs.unlinkSync(filePath);
+          }
+        }
+      } catch (error) {
+        // 忽略目录为空或其他错误
+        console.log('清理测试目录时出现错误:', error);
+      }
+    }
+  });
+
+  afterAll(() => {
+    // 在所有测试完成后清理测试项目目录
     if (fs.existsSync(testProjectRoot)) {
       fs.rmSync(testProjectRoot, { recursive: true, force: true });
     }

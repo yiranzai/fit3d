@@ -318,7 +318,7 @@ export class PackageManagerValidator {
      */
     getSeverity(file, _command, line) {
         // 在package.json中的scripts是错误
-        if (file === 'package.json' && line.includes('"scripts"')) {
+        if (file === 'package.json') {
             return 'error';
         }
         // 在CI/CD配置中是错误

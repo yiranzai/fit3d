@@ -55,6 +55,16 @@ export declare class FITParser {
      */
     static parseBuffer(buffer: Buffer): Promise<FITData>;
     /**
+     * 转换半圆到度数
+     * Convert semicircles to degrees
+     */
+    private static convertSemicirclesToDegrees;
+    /**
+     * 转换FIT解析器数据到我们的格式
+     * Convert FIT parser data to our format
+     */
+    private static convertFitData;
+    /**
      * 生成模拟记录数据（用于演示）
      * Generate mock record data for demonstration
      */

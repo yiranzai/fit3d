@@ -8,6 +8,10 @@ import path from 'path';
 import fs from 'fs';
 import { GPXParser } from '../parsers/gpx-parser.js';
 import { FITParser } from '../parsers/fit-parser.js';
+import { TrajectoryGenerator } from '../visualization/trajectory-generator.js';
+import { MapRenderer } from '../visualization/map-renderer.js';
+import { ThreeDRenderer } from '../visualization/3d-renderer.js';
+import { ActivityType } from '../types/index.js';
 const program = new Command();
 program
     .name('fit3d')
@@ -145,24 +149,114 @@ program
 program
     .command('map')
     .description('生成地图轨迹')
-    .argument('<activity-id>', '活动ID')
-    .option('-s, --style <style>', '地图样式 (terrain|satellite|street)', 'terrain')
+    .argument('<file>', 'FIT/GPX文件路径')
+    .option('-s, --style <style>', '地图样式 (terrain|satellite|street|topographic)', 'terrain')
+    .option('-t, --type <type>', '运动类型 (hiking|cycling)', 'hiking')
     .option('-o, --output <file>', '输出文件路径')
-    .action(async (activityId, options) => {
+    .option('--show-elevation', '显示高程图')
+    .option('--show-speed', '显示速度图')
+    .option('--show-heart-rate', '显示心率图')
+    .option('--show-power', '显示功率图')
+    .option('--show-cadence', '显示踏频图')
+    .action(async (file, options) => {
     console.log('🗺️  生成地图轨迹...');
-    console.log(`📋 活动ID: ${activityId}`);
+    console.log(`📁 文件路径: ${file}`);
     console.log(`🎨 地图样式: ${options.style}`);
+    console.log(`🏃 运动类型: ${options.type}`);
     try {
-        console.log('🔍 查找活动数据...');
-        console.log('✅ 活动数据找到');
-        console.log('🗺️  生成地图轨迹...');
-        console.log('  - 加载地图瓦片...');
-        console.log('  - 绘制轨迹线...');
-        console.log('  - 添加标记点...');
-        console.log('  - 应用样式...');
-        const outputFile = options.output || `map_${activityId}_${Date.now()}.png`;
-        console.log(`💾 保存到: ${outputFile}`);
-        console.log('✅ 地图生成完成！');
+        // 检查文件是否存在
+        if (!fs.existsSync(file)) {
+            console.error('❌ 文件不存在:', file);
+            process.exit(1);
+        }
+        // 检查文件扩展名
+        const ext = path.extname(file).toLowerCase();
+        if (!['.fit', '.gpx'].includes(ext)) {
+            console.error('❌ 不支持的文件格式。请使用 .fit 或 .gpx 文件');
+            process.exit(1);
+        }
+        console.log('🔍 解析运动数据文件...');
+        let trajectoryData;
+        const activityType = options.type === 'cycling' ? ActivityType.CYCLING : ActivityType.HIKING;
+        if (ext === '.fit') {
+            const fitData = await FITParser.parseFile(file);
+            trajectoryData = TrajectoryGenerator.generateFromFITRecords(fitData.records, {
+                activityType,
+                showElevation: options.showElevation,
+                showSpeed: options.showSpeed,
+                showHeartRate: options.showHeartRate,
+                showPower: options.showPower,
+                showCadence: options.showCadence,
+            });
+        }
+        else if (ext === '.gpx') {
+            const gpxData = await GPXParser.parseFile(file);
+            if (gpxData.tracks.length === 0) {
+                console.error('❌ GPX文件中没有轨迹数据');
+                process.exit(1);
+            }
+            const track = gpxData.tracks[0];
+            if (track) {
+                trajectoryData = TrajectoryGenerator.generateFromGPXPoints(track.points, {
+                    activityType,
+                    showElevation: options.showElevation,
+                });
+            }
+        }
+        if (!trajectoryData) {
+            console.error('❌ 无法生成轨迹数据');
+            process.exit(1);
+        }
+        console.log('✅ 轨迹数据解析完成');
+        console.log(`📍 轨迹点数: ${trajectoryData.points.length}`);
+        console.log(`📏 总距离: ${trajectoryData.totalDistance.toFixed(2)} km`);
+        console.log(`⏱️  总时长: ${Math.round(trajectoryData.duration / 1000 / 60)} 分钟`);
+        // 渲染地图
+        const renderOptions = {
+            width: 1920,
+            height: 1080,
+            style: options.style,
+            showTrajectory: true,
+            showElevation: options.showElevation || false,
+            showSpeed: options.showSpeed || false,
+            showHeartRate: options.showHeartRate || false,
+            showPower: options.showPower || false,
+            showCadence: options.showCadence || false,
+            trajectoryStyle: TrajectoryGenerator.getDefaultStyle(activityType),
+        };
+        const result = await MapRenderer.renderTrajectory(trajectoryData, renderOptions);
+        if (result.success) {
+            console.log('✅ 地图生成完成！');
+            console.log(`💾 保存到: ${result.imagePath}`);
+            console.log(`🎯 地图中心: ${result.center.lat.toFixed(6)}, ${result.center.lng.toFixed(6)}`);
+            console.log(`🔍 缩放级别: ${result.zoom}`);
+            console.log('\n📊 轨迹统计信息:');
+            console.log(`  📏 总距离: ${result.trajectoryStats.totalDistance.toFixed(2)} km`);
+            console.log(`  ⬆️  总爬升: ${result.trajectoryStats.totalElevationGain.toFixed(0)} m`);
+            console.log(`  ⬇️  总下降: ${result.trajectoryStats.totalElevationLoss.toFixed(0)} m`);
+            console.log(`  📏 最高海拔: ${result.trajectoryStats.maxElevation.toFixed(0)} m`);
+            console.log(`  📏 最低海拔: ${result.trajectoryStats.minElevation.toFixed(0)} m`);
+            if (result.trajectoryStats.maxSpeed > 0) {
+                console.log(`  🏃 最大速度: ${result.trajectoryStats.maxSpeed.toFixed(2)} km/h`);
+                console.log(`  🏃 平均速度: ${result.trajectoryStats.avgSpeed.toFixed(2)} km/h`);
+            }
+            if (result.trajectoryStats.maxHeartRate > 0) {
+                console.log(`  ❤️  最大心率: ${result.trajectoryStats.maxHeartRate.toFixed(0)} bpm`);
+                console.log(`  ❤️  平均心率: ${result.trajectoryStats.avgHeartRate.toFixed(0)} bpm`);
+            }
+            if (result.trajectoryStats.maxPower > 0) {
+                console.log(`  ⚡ 最大功率: ${result.trajectoryStats.maxPower.toFixed(0)} W`);
+                console.log(`  ⚡ 平均功率: ${result.trajectoryStats.avgPower.toFixed(0)} W`);
+            }
+            if (result.trajectoryStats.maxCadence > 0) {
+                console.log(`  🦵 最大踏频: ${result.trajectoryStats.maxCadence.toFixed(0)} rpm`);
+                console.log(`  🦵 平均踏频: ${result.trajectoryStats.avgCadence.toFixed(0)} rpm`);
+            }
+        }
+        else {
+            console.error('❌ 地图生成失败:', result.error);
+            process.exit(1);
+        }
     }
     catch (error) {
         console.error('❌ 地图生成失败:', error);
@@ -173,29 +267,121 @@ program
 program
     .command('3d')
     .description('生成3D运动追踪视频')
-    .argument('<activity-id>', '活动ID')
+    .argument('<file>', 'FIT/GPX文件路径')
     .option('-a, --angle <angle>', '视角角度 (0-360)', '45')
     .option('-h, --height <height>', '相机高度 (10-1000)', '100')
     .option('-s, --speed <speed>', '播放速度 (0.1-5.0)', '1.0')
+    .option('-t, --type <type>', '运动类型 (hiking|cycling)', 'hiking')
+    .option('-d, --duration <duration>', '视频时长（秒）', '30')
+    .option('-f, --follow <mode>', '相机跟随模式 (fixed|follow|orbit)', 'follow')
     .option('-o, --output <file>', '输出视频文件路径')
-    .action(async (activityId, options) => {
+    .option('--show-terrain', '显示地形')
+    .option('--show-elevation', '显示高程图')
+    .option('--show-speed', '显示速度图')
+    .option('--show-heart-rate', '显示心率图')
+    .option('--show-power', '显示功率图')
+    .option('--show-cadence', '显示踏频图')
+    .option('--show-markers', '显示标记点')
+    .option('--show-stats', '显示统计信息')
+    .action(async (file, options) => {
     console.log('🎬 生成3D运动追踪视频...');
-    console.log(`📋 活动ID: ${activityId}`);
+    console.log(`📁 文件路径: ${file}`);
     console.log(`📐 视角角度: ${options.angle}°`);
     console.log(`📏 相机高度: ${options.height}m`);
     console.log(`⚡ 播放速度: ${options.speed}x`);
+    console.log(`🏃 运动类型: ${options.type}`);
+    console.log(`⏱️  视频时长: ${options.duration}秒`);
+    console.log(`🎯 跟随模式: ${options.follow}`);
     try {
-        console.log('🔍 查找活动数据...');
-        console.log('✅ 活动数据找到');
-        console.log('🎬 生成3D视频...');
-        console.log('  - 创建3D场景...');
-        console.log('  - 加载地形数据...');
-        console.log('  - 设置相机参数...');
-        console.log('  - 渲染关键帧...');
-        console.log('  - 合成视频...');
-        const outputFile = options.output || `3d_${activityId}_${Date.now()}.mp4`;
-        console.log(`💾 保存到: ${outputFile}`);
-        console.log('✅ 3D视频生成完成！');
+        // 检查文件是否存在
+        if (!fs.existsSync(file)) {
+            console.error('❌ 文件不存在:', file);
+            process.exit(1);
+        }
+        // 检查文件扩展名
+        const ext = path.extname(file).toLowerCase();
+        if (!['.fit', '.gpx'].includes(ext)) {
+            console.error('❌ 不支持的文件格式。请使用 .fit 或 .gpx 文件');
+            process.exit(1);
+        }
+        console.log('🔍 解析运动数据文件...');
+        let trajectoryData;
+        const activityType = options.type === 'cycling' ? ActivityType.CYCLING : ActivityType.HIKING;
+        if (ext === '.fit') {
+            const fitData = await FITParser.parseFile(file);
+            trajectoryData = TrajectoryGenerator.generateFromFITRecords(fitData.records, {
+                activityType,
+                showElevation: options.showElevation,
+                showSpeed: options.showSpeed,
+                showHeartRate: options.showHeartRate,
+                showPower: options.showPower,
+                showCadence: options.showCadence,
+            });
+        }
+        else if (ext === '.gpx') {
+            const gpxData = await GPXParser.parseFile(file);
+            if (gpxData.tracks.length === 0) {
+                console.error('❌ GPX文件中没有轨迹数据');
+                process.exit(1);
+            }
+            const track = gpxData.tracks[0];
+            if (track) {
+                trajectoryData = TrajectoryGenerator.generateFromGPXPoints(track.points, {
+                    activityType,
+                    showElevation: options.showElevation,
+                });
+            }
+        }
+        if (!trajectoryData) {
+            console.error('❌ 无法生成轨迹数据');
+            process.exit(1);
+        }
+        console.log('✅ 轨迹数据解析完成');
+        console.log(`📍 轨迹点数: ${trajectoryData.points.length}`);
+        console.log(`📏 总距离: ${trajectoryData.totalDistance.toFixed(2)} km`);
+        console.log(`⏱️  总时长: ${Math.round(trajectoryData.duration / 1000 / 60)} 分钟`);
+        // 设置3D渲染参数
+        const cameraSettings = {
+            angle: parseFloat(options.angle),
+            height: parseFloat(options.height),
+            distance: 100, // 默认距离
+            followMode: options.follow,
+        };
+        const animationSettings = {
+            speed: parseFloat(options.speed),
+            duration: parseFloat(options.duration),
+            frameRate: 30,
+            easing: 'ease-in-out',
+        };
+        const renderSettings = {
+            width: 1920,
+            height: 1080,
+            quality: 'high',
+            backgroundColor: '#87CEEB',
+            showTerrain: options.showTerrain || false,
+            showTrajectory: true,
+            showElevationProfile: options.showElevation || false,
+            showSpeedProfile: options.showSpeed || false,
+            showHeartRateProfile: options.showHeartRate || false,
+            showPowerProfile: options.showPower || false,
+            showCadenceProfile: options.showCadence || false,
+            showMarkers: options.showMarkers || false,
+            showStats: options.showStats || false,
+        };
+        // 渲染3D视频
+        const result = await ThreeDRenderer.renderVideo(trajectoryData, cameraSettings, animationSettings, renderSettings);
+        if (result.success) {
+            console.log('✅ 3D视频生成完成！');
+            console.log(`💾 保存到: ${result.videoPath}`);
+            console.log(`⏱️  视频时长: ${result.duration} 秒`);
+            console.log(`🎞️  总帧数: ${result.frameCount}`);
+            console.log(`📏 文件大小: ${(result.fileSize / 1024 / 1024).toFixed(2)} MB`);
+            console.log(`⏱️  渲染耗时: ${(result.renderTime / 1000).toFixed(2)} 秒`);
+        }
+        else {
+            console.error('❌ 3D视频生成失败:', result.error);
+            process.exit(1);
+        }
     }
     catch (error) {
         console.error('❌ 3D视频生成失败:', error);

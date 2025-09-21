@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { ViteConfigManager } from '../../src/config-managers/vite-config-manager.js';
+import { ViteConfigManager } from '../../src/config-managers/vite-config-manager';
 import fs from 'fs';
 import path from 'path';
 
@@ -17,7 +17,13 @@ describe('ViteConfigManager测试', () => {
   });
 
   afterEach(() => {
-    // 清理测试项目目录
+    // 清理测试项目目录中的配置文件
+    const configPath = path.join(testProjectRoot, 'vite.config.ts');
+    if (fs.existsSync(configPath)) {
+      fs.unlinkSync(configPath);
+    }
+    
+    // 清理整个测试项目目录
     if (fs.existsSync(testProjectRoot)) {
       fs.rmSync(testProjectRoot, { recursive: true, force: true });
     }
@@ -185,7 +191,7 @@ describe('ViteConfigManager测试', () => {
   describe('getConfigPath', () => {
     it('应该返回默认配置路径', () => {
       const configPath = configManager.getConfigPath();
-      const expectedPath = path.join(testProjectRoot, 'vite.config.ts');
+      const expectedPath = path.resolve(testProjectRoot, 'vite.config.ts');
       
       expect(configPath).toBe(expectedPath);
     });

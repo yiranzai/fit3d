@@ -174,14 +174,39 @@ export class ViteConfigManager {
   /**
    * 优化Vite配置
    */
-  async optimizeConfig(config: ViteConfiguration): Promise<ViteConfiguration> {
+  async optimizeConfig(config: Partial<ViteConfiguration>): Promise<ViteConfiguration> {
     const optimized = { ...config };
 
-    // 优化构建配置
-    if (optimized.build) {
-      // 确保有合适的构建目标
+    // 确保有基本的插件配置
+    if (!optimized.plugins) {
+      optimized.plugins = [];
+    }
+
+    // 确保有构建配置
+    if (!optimized.build) {
+      optimized.build = {
+        target: 'es2015',
+        outDir: 'dist',
+        sourcemap: true,
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              vendor: ['react', 'react-dom'],
+              utils: ['lodash', 'dayjs']
+            }
+          }
+        }
+      };
+    } else {
+      // 优化构建配置
       if (!optimized.build.target || optimized.build.target === 'esnext') {
         optimized.build.target = 'es2015';
+      }
+      if (!optimized.build.outDir) {
+        optimized.build.outDir = 'dist';
+      }
+      if (optimized.build.sourcemap === undefined) {
+        optimized.build.sourcemap = true;
       }
 
       // 确保有代码分割配置
@@ -197,45 +222,58 @@ export class ViteConfigManager {
           utils: ['lodash', 'dayjs']
         };
       }
-
-      // 设置合理的chunk大小警告限制
-      if (!optimized.build.rollupOptions) {
-        optimized.build.rollupOptions = {};
-      }
-      if (!optimized.build.rollupOptions.output) {
-        optimized.build.rollupOptions.output = {};
-      }
     }
 
-    // 优化服务器配置
-    if (optimized.server) {
-      // 确保端口在合理范围内
+    // 确保有服务器配置
+    if (!optimized.server) {
+      optimized.server = {
+        port: 3000,
+        open: true,
+        host: 'localhost'
+      };
+    } else {
+      // 优化服务器配置
       if (!optimized.server.port || optimized.server.port < 1 || optimized.server.port > 65535) {
         optimized.server.port = 3000;
       }
-
-      // 确保有合理的host配置
+      if (optimized.server.open === undefined) {
+        optimized.server.open = true;
+      }
       if (!optimized.server.host) {
         optimized.server.host = 'localhost';
       }
     }
 
-    // 优化路径别名
-    if (optimized.resolve && optimized.resolve.alias) {
+    // 确保有路径解析配置
+    if (!optimized.resolve) {
+      optimized.resolve = {
+        alias: {
+          '@': resolve(this.projectRoot, 'src')
+        }
+      };
+    } else {
+      if (!optimized.resolve.alias) {
+        optimized.resolve.alias = {};
+      }
       // 确保有基本的别名配置
       const requiredAliases = {
         '@': resolve(this.projectRoot, 'src')
       };
 
       Object.entries(requiredAliases).forEach(([key, value]) => {
-        if (!optimized.resolve.alias[key]) {
+        if (optimized.resolve && !optimized.resolve.alias[key]) {
           optimized.resolve.alias[key] = value;
         }
       });
     }
 
-    // 优化依赖预构建
-    if (optimized.optimizeDeps) {
+    // 确保有依赖优化配置
+    if (!optimized.optimizeDeps) {
+      optimized.optimizeDeps = {
+        include: ['react', 'react-dom'],
+        exclude: []
+      };
+    } else {
       // 确保有基本的依赖预构建配置
       if (!optimized.optimizeDeps.include) {
         optimized.optimizeDeps.include = ['react', 'react-dom'];
@@ -245,7 +283,7 @@ export class ViteConfigManager {
       }
     }
 
-    return optimized;
+    return optimized as ViteConfiguration;
   }
 
   /**

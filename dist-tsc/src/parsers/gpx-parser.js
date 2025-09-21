@@ -26,10 +26,7 @@ export class GPXParser {
      */
     static async parseContent(content) {
         try {
-            const result = await parseXML(content, {
-                explicitArray: false,
-                mergeAttrs: true,
-            });
+            const result = await parseXML(content);
             const gpx = result.gpx;
             if (!gpx) {
                 throw new Error('无效的GPX文件格式');
@@ -57,10 +54,10 @@ export class GPXParser {
                                 const points = Array.isArray(segment.trkpt) ? segment.trkpt : [segment.trkpt];
                                 for (const point of points) {
                                     const trackPoint = {
-                                        lat: parseFloat(point.lat),
-                                        lon: parseFloat(point.lon),
-                                        ele: point.ele ? parseFloat(point.ele) : undefined,
-                                        time: point.time ? new Date(point.time) : undefined,
+                                        lat: parseFloat(point.$.lat),
+                                        lon: parseFloat(point.$.lon),
+                                        ele: point.ele ? parseFloat(point.ele[0]) : undefined,
+                                        time: point.time ? new Date(point.time[0]) : undefined,
                                     };
                                     gpxTrack.points.push(trackPoint);
                                 }
@@ -94,30 +91,34 @@ export class GPXParser {
         let distance = 0;
         let elevationGain = 0;
         let elevationLoss = 0;
-        let maxElevation = track.points[0].ele || 0;
-        let minElevation = track.points[0].ele || 0;
+        let maxElevation = track.points[0]?.ele || 0;
+        let minElevation = track.points[0]?.ele || 0;
         for (let i = 1; i < track.points.length; i++) {
             const prev = track.points[i - 1];
             const curr = track.points[i];
-            // 计算距离（使用Haversine公式）
-            const dist = this.calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon);
-            distance += dist;
-            // 计算高程变化
-            if (prev.ele !== undefined && curr.ele !== undefined) {
-                const elevationDiff = curr.ele - prev.ele;
-                if (elevationDiff > 0) {
-                    elevationGain += elevationDiff;
+            if (prev && curr && !isNaN(prev.lat) && !isNaN(prev.lon) && !isNaN(curr.lat) && !isNaN(curr.lon)) {
+                // 计算距离（使用Haversine公式）
+                const dist = this.calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon);
+                if (!isNaN(dist)) {
+                    distance += dist;
                 }
-                else {
-                    elevationLoss += Math.abs(elevationDiff);
+                // 计算高程变化
+                if (prev.ele !== undefined && curr.ele !== undefined) {
+                    const elevationDiff = curr.ele - prev.ele;
+                    if (elevationDiff > 0) {
+                        elevationGain += elevationDiff;
+                    }
+                    else {
+                        elevationLoss += Math.abs(elevationDiff);
+                    }
+                    maxElevation = Math.max(maxElevation, curr.ele);
+                    minElevation = Math.min(minElevation, curr.ele);
                 }
-                maxElevation = Math.max(maxElevation, curr.ele);
-                minElevation = Math.min(minElevation, curr.ele);
             }
         }
         // 计算时长
-        const startTime = track.points[0].time;
-        const endTime = track.points[track.points.length - 1].time;
+        const startTime = track.points[0]?.time;
+        const endTime = track.points[track.points.length - 1]?.time;
         const duration = startTime && endTime ? endTime.getTime() - startTime.getTime() : 0;
         return {
             distance: Math.round(distance * 1000) / 1000, // 保留3位小数

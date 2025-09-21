@@ -49,10 +49,7 @@ export class GPXParser {
    */
   static async parseContent(content: string): Promise<GPXData> {
     try {
-      const result = await parseXML(content, {
-        explicitArray: false,
-        mergeAttrs: true,
-      }) as any;
+      const result = await parseXML(content) as any;
 
       const gpx = result.gpx;
       if (!gpx) {
@@ -87,10 +84,10 @@ export class GPXParser {
                 
                 for (const point of points) {
                   const trackPoint: GPXTrackPoint = {
-                    lat: parseFloat(point.lat),
-                    lon: parseFloat(point.lon),
-                    ele: point.ele ? parseFloat(point.ele) : undefined,
-                    time: point.time ? new Date(point.time) : undefined,
+                    lat: parseFloat(point.$.lat),
+                    lon: parseFloat(point.$.lon),
+                    ele: point.ele ? parseFloat(point.ele[0]) : undefined,
+                    time: point.time ? new Date(point.time[0]) : undefined,
                   };
                   
                   gpxTrack.points.push(trackPoint);
@@ -142,10 +139,12 @@ export class GPXParser {
       const prev = track.points[i - 1];
       const curr = track.points[i];
 
-      if (prev && curr) {
+      if (prev && curr && !isNaN(prev.lat) && !isNaN(prev.lon) && !isNaN(curr.lat) && !isNaN(curr.lon)) {
         // 计算距离（使用Haversine公式）
         const dist = this.calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon);
-        distance += dist;
+        if (!isNaN(dist)) {
+          distance += dist;
+        }
 
         // 计算高程变化
         if (prev.ele !== undefined && curr.ele !== undefined) {
